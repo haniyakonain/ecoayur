@@ -33,7 +33,8 @@ const SymptomChecker = () => {
                 `${import.meta.env.VITE_API_URL}/api/recommend`,
                 {
                     symptoms: selectedSymptoms,
-                }
+                },
+                { timeout: 30000 }
             );
 
             // Check for success flag
@@ -44,11 +45,14 @@ const SymptomChecker = () => {
             // Access recommendations array from the response
             setRecommendations(response.data.recommendations);
         } catch (err) {
+            const isTimeout = err.code === 'ECONNABORTED';
             setError(
-                err.response?.data?.error || 
-                err.response?.data?.message || 
-                err.message || 
-                'Failed to fetch recommendations. Please try again.'
+                isTimeout
+                    ? 'The server took too long to respond. It may be waking up from sleep — please try again in a moment.'
+                    : err.response?.data?.error ||
+                      err.response?.data?.message ||
+                      err.message ||
+                      'Failed to fetch recommendations. Please try again.'
             );
             console.error('Recommendation error:', err.response || err);
         } finally {
